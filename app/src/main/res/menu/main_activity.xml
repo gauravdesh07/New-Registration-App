@@ -3,13 +3,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item android:id="@+id/menu_refresh"
-        android:title="Refresh"
+        android:title="@string/refresh"
         android:icon="@drawable/ic_refresh_black_24dp"
         app:showAsAction="ifRoom"
         />
     <item
         android:id="@+id/menu_logout"
         android:icon="@drawable/logout1"
-        android:title="LogOut"
+        android:title="@string/logout"
         app:showAsAction="ifRoom"/>
 </menu>

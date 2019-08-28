@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">Reg_App</string>
+    <string name="logout">LogOut</string>
+    <string name="refresh">Refresh</string>
 
     <string-array name="Branches">
         <item>Comp</item>
