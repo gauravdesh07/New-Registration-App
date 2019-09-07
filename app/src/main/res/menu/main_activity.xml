@@ -7,9 +7,4 @@
         android:icon="@drawable/ic_refresh_black_24dp"
         app:showAsAction="ifRoom"
         />
-    <item
-        android:id="@+id/menu_logout"
-        android:icon="@drawable/logout1"
-        android:title="@string/logout"
-        app:showAsAction="ifRoom"/>
 </menu>
