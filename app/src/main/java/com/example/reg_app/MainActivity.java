@@ -235,7 +235,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onTransactionSuccess() {
-                Toast.makeText(MainActivity.this, "Payment Successful\nUser Registered to PASC", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "Payment successful.\nUser registered to PASC", Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -250,7 +250,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onTransactionCancelled() {
-                Toast.makeText(MainActivity.this, "Cancelled by user", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "Cancelled by user.", Toast.LENGTH_SHORT).show();
             }
         });
         easyUpiPayment.startPayment();
