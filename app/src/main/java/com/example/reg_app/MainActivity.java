@@ -1,45 +1,38 @@
 package com.example.reg_app;
 
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.pm.ActivityInfo;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+import com.shreyaspatil.EasyUpiPayment.EasyUpiPayment;
+import com.shreyaspatil.EasyUpiPayment.listener.PaymentStatusListener;
+import com.shreyaspatil.EasyUpiPayment.model.TransactionDetails;
 
 import java.text.DateFormat;
-import java.util.ArrayList;
 import java.util.Date;
+import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String UPI_ID = "lunkaddivyank@oksbi";
-    private static final int UPI_PAYMENT = 0;
 
     private TextInputLayout text_name, text_contact, text_mail;
     private TextInputEditText name, contact, mail;
@@ -221,23 +214,46 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
     private void UPI_transaction() {
-        Uri uri = Uri.parse("upi://pay").buildUpon()
-                .appendQueryParameter("pa", UPI_ID)
-                .appendQueryParameter("pn", "Divyank Lunkad")
-                .appendQueryParameter("tn", "Trial")
-                .appendQueryParameter("am", "1.00")
-                .appendQueryParameter("cu", "INR")
+        String TransRefId = RefIDGen();
+        String TransId = IDGen();
+        //Create instance of EasyUpiPayment
+        final EasyUpiPayment easyUpiPayment = new EasyUpiPayment.Builder()
+                .with(this)
+                .setPayeeVpa(UPI_ID)
+                .setPayeeName("Divyank Lunkad")
+                .setTransactionId(TransId)
+                .setTransactionRefId(TransRefId)
+                .setDescription("Trial")
+                .setAmount("1.00")
                 .build();
-        Intent upiPayIntent = new Intent(Intent.ACTION_VIEW);
-        upiPayIntent.setData(uri);
 
-        Intent chooser = Intent.createChooser(upiPayIntent, "Pay with:");
+        easyUpiPayment.setPaymentStatusListener(new PaymentStatusListener() {
+            @Override
+            public void onTransactionCompleted(TransactionDetails transactionDetails) {
+                Log.d("TransactionDetails", transactionDetails.toString());
+            }
 
-        if (chooser.resolveActivity(getPackageManager()) != null) {
-            startActivityForResult(chooser, UPI_PAYMENT);
-        } else {
-            Toast.makeText(MainActivity.this, "No UPI found. Please install one to continue.", Toast.LENGTH_SHORT).show();
-        }
+            @Override
+            public void onTransactionSuccess() {
+                Toast.makeText(MainActivity.this, "Payment Successful\nUser Registered to PASC", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onTransactionSubmitted() {
+                Toast.makeText(MainActivity.this, "Pending | Submitted", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onTransactionFailed() {
+                Toast.makeText(MainActivity.this, "Failed", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onTransactionCancelled() {
+                Toast.makeText(MainActivity.this, "Cancelled by user", Toast.LENGTH_SHORT).show();
+            }
+        });
+        easyUpiPayment.startPayment();
     }
 
     private void Cash_transaction() {
@@ -279,82 +295,38 @@ public class MainActivity extends AppCompatActivity {
         alertDialog.show();
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+    String RefIDGen() {
+        StringBuilder RefId = new StringBuilder();
+        final int min = 1000;
+        final int max = 9999;
+        int i = 0;
+        while (i < 3) {
 
-        switch (requestCode) {
-            case UPI_PAYMENT:
-                if (resultCode == RESULT_OK) {
-                    if (data != null) {
-                        String text = data.getStringExtra("response");
-                        Log.d("UPI", "onActivityResult: " + text);
-                        ArrayList<String> dataList = new ArrayList<>();
-                        dataList.add(text);
-                        upiPaymentDataOperation(dataList);
-                    } else {
-                        Log.d("UPI", "onActivityResult: " + "Return data is null");
-                        ArrayList<String> dataList = new ArrayList<>();
-                        dataList.add("nothing");
-                        upiPaymentDataOperation(dataList);
-                    }
-                } else {
-                    Log.d("UPI", "onActivityResult: " + "Return data is null"); //when user simply back without payment
-                    ArrayList<String> dataList = new ArrayList<>();
-                    dataList.add("nothing");
-                    upiPaymentDataOperation(dataList);
-                }
-                break;
+            final int random = new Random().nextInt((max - min) + 1) + min;
+            RefId.append(random);
+            i++;
         }
+        return RefId.toString();
     }
 
-    private void upiPaymentDataOperation(ArrayList<String> data) {
-        if (isConnectionAvailable(MainActivity.this)) {
-            String str = data.get(0);
-            Log.d("UPIPAY", "upiPaymentDataOperation: " + str);
-            String paymentCancel = "";
-            if (str == null)
-                str = "discard";
-            String status = "";
-            String approvalRefNo = "";
-            String response[] = str.split("&");
-            for (int i = 0; i < response.length; i++) {
-                String equalStr[] = response[i].split("=");
-                if (equalStr.length >= 2) {
-                    if (equalStr[0].toLowerCase().equals("Status".toLowerCase())) {
-                        status = equalStr[1].toLowerCase();
-                    } else if (equalStr[0].toLowerCase().equals("ApprovalRefNo".toLowerCase()) || equalStr[0].toLowerCase().equals("txnRef".toLowerCase())) {
-                        approvalRefNo = equalStr[1];
-                    }
-                } else {
-                    paymentCancel = "Payment cancelled by user.";
-                }
-            }
-
-            if (status.equals("success")) {
-                //Code to handle successful transaction here.
-                Toast.makeText(MainActivity.this, "Transaction successful.", Toast.LENGTH_SHORT).show();
-                Log.d("UPI", "responseStr: " + approvalRefNo);
-            } else if ("Payment cancelled by user.".equals(paymentCancel)) {
-                Toast.makeText(MainActivity.this, "Payment cancelled by user.", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(MainActivity.this, "Transaction failed.Please try again", Toast.LENGTH_SHORT).show();
-            }
-        } else {
-            Toast.makeText(MainActivity.this, "Internet connection is not available. Please check and try again", Toast.LENGTH_SHORT).show();
+    String IDGen() {
+        int i = 0;
+        StringBuilder Id = new StringBuilder();
+        final String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        final int N = alphabet.length();
+        Random r = new Random();
+        Id.append(alphabet.charAt(r.nextInt(N)));
+        final int min = 1000;
+        final int max = 9999;
+        while (i < 5) {
+            final int random = new Random().nextInt((max - min) + 1) + min;
+            Id.append(random);
+            i++;
         }
-    }
-
-    public static boolean isConnectionAvailable(Context context) {
-        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        if (connectivityManager != null) {
-            NetworkInfo netInfo = connectivityManager.getActiveNetworkInfo();
-            if (netInfo != null && netInfo.isConnected()
-                    && netInfo.isConnectedOrConnecting()
-                    && netInfo.isAvailable()) {
-                return true;
-            }
-        }
-        return false;
+        final int min1 = 10;
+        final int max1 = 99;
+        final int random1 = new Random().nextInt((max1 - min1) + 1) + min1;
+        Id.append(random1);
+        return Id.toString();
     }
 }
