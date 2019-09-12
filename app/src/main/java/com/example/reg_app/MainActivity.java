@@ -147,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
                                                             }
                                                             break;
                                                         case 1:
-                                                            UPI_transaction();
+                                                            //Working
                                                             break;
                                                     }
                                                 }
@@ -263,52 +263,7 @@ public class MainActivity extends AppCompatActivity {
         }
         return true;
     }
-    private void UPI_transaction() {
-        String TransRefId = getSaltString();//RefIDGen();
-        String TransId = IDGen();
-        //Create instance of EasyUpiPayment
-        final EasyUpiPayment easyUpiPayment = new EasyUpiPayment.Builder()
-                .with(this)
-                .setPayeeVpa(UPI_ID)
-                .setPayeeName("Divyank Lunkad")
-                .setTransactionId(TransId)
-                .setTransactionRefId(TransRefId)
-                .setDescription("Trial")
-                .setAmount("1.00")
-                .build();
-
-        easyUpiPayment.setPaymentStatusListener(new PaymentStatusListener() {
-            @Override
-            public void onTransactionCompleted(TransactionDetails transactionDetails) {
-                Log.d("TransactionDetails", transactionDetails.toString());
-            }
-
-            @Override
-            public void onTransactionSuccess() {
-                Toast.makeText(MainActivity.this, "Payment successful.\nUser registered to PASC", Toast.LENGTH_SHORT).show();
-                startActivity(new Intent(MainActivity.this,MainActivity.class));
-            }
-
-            @Override
-            public void onTransactionSubmitted() {
-                Toast.makeText(MainActivity.this, "Pending | Submitted", Toast.LENGTH_SHORT).show();
-                startActivity(new Intent(MainActivity.this,MainActivity.class));
-            }
-
-            @Override
-            public void onTransactionFailed() {
-                Toast.makeText(MainActivity.this, "Failed", Toast.LENGTH_SHORT).show();
-                startActivity(new Intent(MainActivity.this,MainActivity.class));
-            }
-
-            @Override
-            public void onTransactionCancelled() {
-                Toast.makeText(MainActivity.this, "Cancelled by user.", Toast.LENGTH_SHORT).show();
-                startActivity(new Intent(MainActivity.this,MainActivity.class));
-            }
-        });
-        easyUpiPayment.startPayment();
-    }
+    
 
 //    private void Cash_transaction() {
 //        LinearLayout linearLayout=new LinearLayout(MainActivity.this);
