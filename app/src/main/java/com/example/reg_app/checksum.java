@@ -35,7 +35,7 @@ public class checksum extends AppCompatActivity implements PaytmPaymentTransacti
         orderId =intent.getExtras().getString("orderid");
         custid = intent.getExtras().getString("custid");
         temp = intent.getIntExtra("final_amount", 1);
-        mid = "VnVTNM82671278618561"; /// your merchant id
+        mid = ""; /// your merchant id
         sendUserDetailTOServerdd dl = new sendUserDetailTOServerdd();
         //noinspection unchecked
         dl.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
